@@ -1,13 +1,13 @@
-# ===== Go build artifacts =====
+# ===== Go build outputs =====
+bin/
+dist/
+out/
+
+# If you sometimes build into current folder (not recommended)
 *.exe
 *.out
 *.test
 *.bin
-
-# Common binary names
-main
-app
-server
 
 # ===== Coverage / profiling =====
 *.cover
@@ -17,6 +17,5 @@ coverage.out
 # ===== OS / Editor =====
 .DS_Store
 Thumbs.db
-
-bin/
-
+.vscode/
+.idea/
