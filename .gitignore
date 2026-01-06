@@ -1,0 +1,19 @@
+# ===== Go build artifacts =====
+*.exe
+*.out
+*.test
+*.bin
+
+# Common binary names
+main
+app
+server
+
+# ===== Coverage / profiling =====
+*.cover
+coverage.out
+*.pprof
+
+# ===== OS / Editor =====
+.DS_Store
+Thumbs.db
