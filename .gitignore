@@ -17,3 +17,6 @@ coverage.out
 # ===== OS / Editor =====
 .DS_Store
 Thumbs.db
+
+bin/
+
