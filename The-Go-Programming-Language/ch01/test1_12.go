@@ -5,9 +5,11 @@ import (
 	"image/color"
 	"image/gif"
 	"io"
+	"log"
 	"math"
 	"math/rand"
-	"os"
+	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -20,10 +22,27 @@ const (
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	lissajous1(os.Stdout)
+	http.HandleFunc("/", handler)
+	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
-func lissajous1(out io.Writer, cycles int) {
+func handler(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		log.Print(err)
+	}
+	cyclesStr := r.Form.Get("cycles")
+	if cyclesStr == "" {
+		cyclesStr = "5"
+	}
+	cycles, err := strconv.Atoi(cyclesStr)
+	if err != nil {
+		http.Error(w, "cycle参数必须是整数", http.StatusBadRequest)
+		return
+	}
+	lissajous(w, cycles)
+}
+
+func lissajous(out io.Writer, cycles int) {
 	const (
 		res     = 0.001
 		size    = 100
