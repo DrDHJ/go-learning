@@ -29,27 +29,33 @@ type Line struct {
 var sin30, cos30 = math.Sin(angle), math.Cos(angle)
 
 func main() {
-	http.HandleFunc("/", myhandler)
+	http.HandleFunc("/getSvg", myhandler)
 	log.Fatal(http.ListenAndServe("localhost:9000", nil))
 }
 
 func myhandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/svg+xml")
 
-	fmt.Fprint(w, getSVG())
+	if err := r.ParseForm(); err != nil {
+		log.Printf("ParseForm() error: %v", err)
+	}
+
+	fName := r.Form.Get("func")
+	fmt.Println("function name:", fName)
+	fmt.Fprint(w, getSVG(fName))
 }
 
-func getSVG() string {
+func getSVG(fName string) string {
 	svg := ""
 	svg += fmt.Sprintf("<svg xmlns='http://www.w3.org/2000/svg' "+
 		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
 		"width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			pa, za := corner(i+1, j)
-			pb, zb := corner(i, j)
-			pc, zc := corner(i, j+1)
-			pd, zd := corner(i+1, j+1)
+			pa, za := corner(i+1, j, fName)
+			pb, zb := corner(i, j, fName)
+			pc, zc := corner(i, j+1, fName)
+			pd, zd := corner(i+1, j+1, fName)
 			color := getColorFromZ(math.Max(math.Max(za, zb), math.Max(zc, zd)))
 			if isCrossLine(Line{pa, pb}, Line{pc, pd}) {
 				continue
@@ -76,14 +82,26 @@ func getColorFromZ(z float64) string {
 	return fmt.Sprintf("#%06x", color)
 }
 
-func corner(i, j int) (Point, float64) {
+func corner(i, j int, fName string) (Point, float64) {
 	x := xyrange * (float64(i)/cells - 0.5)
 	y := xyrange * (float64(j)/cells - 0.5)
 
-	z := f(x, y)
+	z := 0.0
+	switch fName {
+	case "f":
+		z = f(x, y)
+	case "eg":
+		z = eggBox(x, y)
+	case "m":
+		z = moguls(x, y)
+	case "s":
+		z = saddle(x, y)
+	default:
+		z = f(x, y)
+	}
 
 	if math.IsInf(z, 0) || math.IsNaN(z) {
-		return Point{0, 0}, z
+		return Point{-1000, -1000}, 0
 	}
 
 	sx := width/2 + (x-y)*cos30*xyscale
